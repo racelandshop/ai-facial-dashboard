@@ -1,0 +1,11 @@
+node_modules
+package-lock.json
+build
+src/localize/generated.ts
+!script/build
+cameras_dashboard/*.js
+cameras_dashboard/*.json
+cameras_dashboard/*.js.gz
+!cameras_dashboard/*.py
+
+yarn-error.log

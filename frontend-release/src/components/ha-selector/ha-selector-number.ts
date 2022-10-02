@@ -1,0 +1,120 @@
+import { css, CSSResultGroup, html, LitElement, PropertyValues } from "lit";
+import { customElement, property } from "lit/decorators";
+import { classMap } from "lit/directives/class-map";
+import { fireEvent } from "../../common/dom/fire_event";
+import { NumberSelector } from "../../data/selector";
+import { HomeAssistant } from "../../types";
+import "../ha-slider";
+import "../ha-textfield";
+
+@customElement("ha-selector-number")
+export class HaNumberSelector extends LitElement {
+  @property() public hass!: HomeAssistant;
+
+  @property() public selector!: NumberSelector;
+
+  @property() public value?: number;
+
+  @property() public placeholder?: number;
+
+  @property() public label?: string;
+
+  @property({ type: Boolean }) public required = true;
+
+  @property({ type: Boolean }) public disabled = false;
+
+  protected update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    // console.log("talvez isto ajude changedProperties", changedProperties);
+  }
+
+  protected render() {
+    return html`${this.selector.number.mode !== "box"
+        ? html`${this.label}<ha-slider
+              .min=${this.selector.number.min}
+              .max=${this.selector.number.max}
+              .value=${this._value}
+              .step=${this.selector.number.step ?? 1}
+              .disabled=${this.disabled}
+              .required=${this.required}
+              pin
+              ignore-bar-touch
+              @change=${this._handleSliderChange}
+            >
+            </ha-slider>`
+        : ""}
+      <ha-textfield
+        inputMode="numeric"
+        pattern="[0-9]+([\\.][0-9]+)?"
+        .label=${this.selector.number.mode !== "box" ? undefined : this.label}
+        .placeholder=${this.placeholder}
+        class=${classMap({ single: this.selector.number.mode === "box" })}
+        .min=${this.selector.number.min}
+        .max=${this.selector.number.max}
+        .value=${this.value || ""}
+        .step=${this.selector.number.step ?? 1}
+        .disabled=${this.disabled}
+        .required=${this.required}
+        .suffix=${this.selector.number.unit_of_measurement}
+        type="number"
+        autoValidate
+        ?no-spinner=${this.selector.number.mode !== "box"}
+        @input=${this._handleInputChange}
+      >
+      </ha-textfield>`;
+  }
+
+  private get _value() {
+    return this.value ?? (this.selector.number.min || 0);
+  }
+
+  private _handleInputChange(ev) {
+    ev.stopPropagation();
+    const value =
+      ev.target.value === "" || isNaN(ev.target.value)
+        ? this.required
+          ? this.selector.number.min || 0
+          : undefined
+        : Number(ev.target.value);
+    if (this.value === value) {
+      return;
+    }
+    fireEvent(this, "value-changed", { value });
+  }
+
+  private _handleSliderChange(ev) {
+    ev.stopPropagation();
+    const value = Number(ev.target.value);
+    if (this.value === value) {
+      return;
+    }
+    fireEvent(this, "value-changed", { value });
+  }
+
+  static get styles(): CSSResultGroup {
+    return css`
+      :host {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      ha-slider {
+        flex: 1;
+      }
+      ha-textfield {
+        --ha-textfield-input-width: 40px;
+      }
+      .single {
+        --ha-textfield-input-width: unset;
+        flex: 1;
+      }
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ha-selector-number": HaNumberSelector;
+  }
+}

@@ -1,0 +1,4 @@
+[submodule "frontend-release"]
+	path = frontend-release
+	url = https://github.com/RACELAND-Automacao-Lda/frontend-release
+	branch = themerework

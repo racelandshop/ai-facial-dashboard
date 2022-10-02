@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <% if (!useWDS) { %>
+    <link rel="modulepreload" href="<%= latestCoreJS %>" crossorigin="use-credentials" />
+    <link rel="modulepreload" href="<%= latestAppJS %>" crossorigin="use-credentials" />
+    <% } %>
+    <%= renderTemplate('_header') %>
+    <title>Home Assistant</title>
+    <link rel="mask-icon" href="/static/icons/mask-icon.svg" color="#03a9f4" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/icons/favicon-apple-180x180.png"
+    />
+    <meta name="apple-itunes-app" content="app-id=1099568401" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Home Assistant">
+    <meta
+      name="msapplication-square70x70logo"
+      content="/static/icons/tile-win-70x70.png"
+    />
+    <meta
+      name="msapplication-square150x150logo"
+      content="/static/icons/tile-win-150x150.png"
+    />
+    <meta
+      name="msapplication-wide310x150logo"
+      content="/static/icons/tile-win-310x150.png"
+    />
+    <meta
+      name="msapplication-square310x310logo"
+      content="/static/icons/tile-win-310x310.png"
+    />
+    <meta name="msapplication-TileColor" content="#03a9f4ff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="referrer" content="same-origin" />
+    <meta name="theme-color" content="#THEMEC" />
+    <meta name="color-scheme" content="dark light" />
+    <style>
+      html {
+        background-color: var(--primary-background-color, #fafafa);
+        color: var(--primary-text-color, #212121);
+      }
+      @media (prefers-color-scheme: dark) {
+        html {
+          background-color: var(--primary-background-color, #111111);
+          color: var(--primary-text-color, #e1e1e1);
+        }
+      }
+      body {
+        font-family: Roboto, Noto, sans-serif;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-font-smoothing: antialiased;
+        font-weight: 400;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+      #ha-launch-screen {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      #ha-launch-screen svg {
+        width: 170px;
+        flex-shrink: 0;
+      }
+      #ha-launch-screen .ha-launch-screen-spacer {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ha-launch-screen">
+      <div class="ha-launch-screen-spacer"></div>
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="256.000000pt" height="180.000000pt" viewBox="0 0 256.000000 180.000000"
+ preserveAspectRatio="xMidYMid meet">
+
+<g transform="translate(0.000000,180.000000) scale(0.100000,-0.100000)"
+fill="#000000" stroke="none">
+<path d="M1510 1554 c-403 -47 -745 -184 -954 -383 -82 -79 -146 -173 -177
+-262 -28 -81 -31 -209 -6 -289 60 -197 259 -377 546 -494 87 -35 89 -32 6 12
+-159 85 -291 196 -363 306 -69 106 -101 237 -83 342 62 354 462 631 1056 730
+85 15 163 19 349 19 143 0 223 3 200 8 -42 8 -517 18 -574 11z"/>
+<path d="M1534 1279 c-88 -11 -140 -26 -219 -64 -147 -70 -226 -178 -227 -311
+-1 -120 32 -202 130 -325 93 -117 247 -238 410 -322 102 -53 139 -64 47 -14
+-321 174 -533 445 -512 653 20 192 183 326 455 373 106 19 107 19 42 19 -36 0
+-93 -4 -126 -9z"/>
+<path d="M948 1228 c-62 -22 -13 -58 78 -58 30 0 64 5 75 10 68 37 -69 79
+-153 48z"/>
+<path d="M783 1043 c-12 -2 -27 -11 -34 -19 -41 -49 128 -81 198 -38 62 39
+-53 79 -164 57z"/>
+<path d="M730 812 c-74 -37 -30 -82 80 -82 70 0 130 25 130 55 0 41 -145 60
+-210 27z"/>
+<path d="M823 541 c-40 -19 -61 -50 -47 -72 11 -18 70 -39 109 -39 93 0 183
+50 159 88 -28 45 -145 57 -221 23z"/>
+</g>
+</svg>      <div id="ha-launch-screen-info-box" class="ha-launch-screen-spacer"></div>
+    </div>
+
+    <home-assistant></home-assistant>
+
+    <%= renderTemplate('_js_base') %>
+    <%= renderTemplate('_preload_roboto') %>
+
+    <script <% if (!useWDS) { %>crossorigin="use-credentials"<% } %>>
+      // Safari 12 and below does not have a compliant ES2015 implementation of template literals, so we ship ES5
+      if (!isS11_12) {
+        import("<%= latestCoreJS %>");
+        import("<%= latestAppJS %>");
+        window.customPanelJS = "<%= latestCustomPanelJS %>";
+        window.latestJS = true;
+        if (!window.globalThis) {
+          window.globalThis = window;
+        }
+      }
+    </script>
+    <script>
+    {% for extra_module in extra_modules -%}
+    import("{{ extra_module }}");
+    {% endfor -%}
+    </script>
+
+    <script>
+        if (!window.latestJS) {
+          window.customPanelJS = "<%= es5CustomPanelJS %>";
+
+          <% if (useRollup) { %>
+            _ls("/static/js/s.min.js").onload = function() {
+              // Although core and app can load in any order, we need to
+              // force loading core first because it contains polyfills
+              return System.import("<%= es5CoreJS %>").then(function() {
+                System.import("<%= es5AppJS %>");
+              });
+            }
+          <% } else { %>
+            _ls("<%= es5CoreJS %>");
+            _ls("<%= es5AppJS %>");
+          <% } %>
+        }
+    </script>
+    <script>
+      if (!window.latestJS) {
+        {% for extra_script in extra_js_es5 -%}
+        _ls("{{ extra_script }}");
+        {% endfor -%}
+      }
+    </script>
+  </body>
+</html>
