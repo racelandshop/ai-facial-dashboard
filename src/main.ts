@@ -4,7 +4,7 @@ import { classMap } from "lit/directives/class-map";
 import "../frontend-release/src/resources/ha-style";
 import "../frontend-release/src/components/search-input";
 import "../frontend-release/src/components/ha-fab";
-import { showDialog } from "../frontend-release/src/dialogs/make-dialog-manager";
+//import { showDialog } from "../frontend-release/src/dialogs/make-dialog-manager";
 import { applyThemesOnElement } from "../frontend-release/src/common/dom/apply_themes_on_element";
 //import { fireEvent } from "../frontend-release/src/common/dom/fire_event";
 import { makeDialogManager } from "../frontend-release/src/dialogs/make-dialog-manager";
@@ -23,7 +23,7 @@ declare global {
   }
 }
 
-@customElement("cameras-dashboard")
+@customElement("ai-dashboard")
 class cameraFrontend extends Dashboard {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
