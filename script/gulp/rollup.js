@@ -60,7 +60,7 @@ const DevelopPlugins = [
       path.resolve("./frontend-release/src/components/ha-icon-picker.ts"),
     ],
   }),
-  entrypointHashmanifest({ manifestName: "./cameras_dashboard/manifest.json" }),
+  entrypointHashmanifest({ manifestName: "./ai_facial_recognition/manifest.json" }),
 ];
 
 const BuildPlugins = DevelopPlugins.concat([
@@ -76,7 +76,7 @@ const inputconfig = {
 };
 const outputconfig = (isDev) => {
   return {
-    dir: "./cameras_dashboard/",
+    dir: "./ai_facial_recognition/",
     chunkFileNames: !isDev ? "c.[hash].js" : "[name]-dev.js",
     assetFileNames: !isDev ? "a.[hash].js" : "[name]-dev.js",
     entryFileNames: !isDev ? "[name]-[hash].js" : "[name]-dev.js",
@@ -90,7 +90,7 @@ const outputconfig = (isDev) => {
 function createServer() {
   const server = http.createServer((request, response) => {
     return handler(request, response, {
-      public: "./cameras_dashboard/",
+      public: "./ai_facial_recognition/",
     });
   });
 
@@ -153,9 +153,9 @@ gulp.task("compress", function compressApp() {
 });
 
 function writeEntrypoint() {
-  const entrypointManifest = require(path.resolve("./cameras_dashboard/manifest.json"));
+  const entrypointManifest = require(path.resolve("./ai_facial_recognition/manifest.json"));
   fs.writeFileSync(
-    path.resolve("./cameras_dashboard/entrypoint.js"),
+    path.resolve("./ai_facial_recognition/entrypoint.js"),
     `
 try {
   new Function("import('/hacsfiles/frontend/${entrypointManifest["./src/main.ts"]}')")();

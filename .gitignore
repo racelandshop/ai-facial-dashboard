@@ -3,9 +3,9 @@ package-lock.json
 build
 src/localize/generated.ts
 !script/build
-cameras_dashboard/*.js
-cameras_dashboard/*.json
-cameras_dashboard/*.js.gz
-!cameras_dashboard/*.py
+ai_facial_recognition/*.js
+ai_facial_recognition/*.json
+ai_facial_recognition/*.js.gz
+!ai_facial_recognition/*.py
 
 yarn-error.log

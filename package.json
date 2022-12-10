@@ -2,7 +2,7 @@
   "name": "hacs-frontend",
   "description": "Frontend of the camera dashboard used in the raceland fork of homeassistant",
   "source": "src/main.ts",
-  "main": "cameras_dashboard/entrypoint.js",
+  "main": "ai_facial_recognition/entrypoint.js",
   "scripts": {
     "postinstall": "patch-package",
     "start": "./script/develop",

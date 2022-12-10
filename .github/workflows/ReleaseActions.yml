@@ -54,11 +54,11 @@ jobs:
         run: |
           export version=${{ github.ref }}
           sed -i "s|main|${version##*/}|" ./setup.py
-          sed -i "s|main|${version##*/}|" ./cameras_dashboard/version.py
+          sed -i "s|main|${version##*/}|" ./ai_facial_recognition/version.py
           sed -i "s|main|${version##*/}|" ./src/version.ts
 
           cat ./setup.py
-          cat ./cameras_dashboard/version.py
+          cat ./ai_facial_recognition/version.py
           cat ./src/version.ts
 
       - name: Install dependencies

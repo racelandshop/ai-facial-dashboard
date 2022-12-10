@@ -5,7 +5,7 @@ require("./translations");
 
 gulp.task("cleanup", (task) => {
   del.sync(["./frontend-release/build/**", "./frontend-release/build"]);
-  del.sync(["./cameras_dashboard/*.js", "./cameras_dashboard/*.json", "./cameras_dashboard/*.gz"]);
+  del.sync(["./ai_facial_recognition/*.js", "./ai_facial_recognition/*.json", "./ai_facial_recognition/*.gz"]);
   task();
 });
 

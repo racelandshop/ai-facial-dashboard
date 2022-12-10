@@ -1,2 +1,2 @@
-graft cameras_dashboard
+graft ai_facial_recognition
 global-exclude *.py[cod]
