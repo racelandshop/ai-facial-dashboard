@@ -15,7 +15,7 @@ export const showPersonAIDataDialog = (
   element: HTMLElement,
   aiPersonDialog: aiPersonDialogParams
 ): void => {
-  if (aiPersonDialog.personInfo.registered_status) {
+  if (aiPersonDialog.personInfo.registered_status === false) {
     fireEvent(element, "show-dialog", {
       dialogTag: "upload-ai-facial-data-dialog",
       dialogImport: importAddPerson,

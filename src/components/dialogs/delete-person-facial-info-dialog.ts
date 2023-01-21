@@ -9,7 +9,7 @@ import "../../../frontend-release/src/components/ha-dialog";
 import "../../../frontend-release/src/components/ha-header-bar";
 import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
-//import { removeCamera, fetchCameraInformation } from "../../data/websocket";
+import { deleteFaceInformation } from "../../websocket";
 import { localize } from "../../localize/localize";
 
 @customElement("delete-ai-facial-data-dialog")
@@ -86,16 +86,12 @@ export class HuiDeleteDialogAiFacialData
     if (ev) {
       ev.stopPropagation();
     }
-    console.warn("Method delete data no yet implemented");
-    // const result = await removeCamera(
-    //   this.hass,
-    //   this.personInfo.unique_id,
-    //   this.personInfo.entity_id
-    // );
-    // if (result === true) {
-    //   this.closeDialog();
-    //   fireEvent(this, "update-camera-dashboard");
-    // }
+
+    const result = await deleteFaceInformation(this.hass, this.personInfo?.name);
+    if (result === true) {
+      fireEvent(this, "update-ai-dashboard");
+      this.closeDialog();
+    }
   }
 
   static get styles(): CSSResultGroup {

@@ -1,7 +1,10 @@
 import { PersonInfo } from "../types";
+import { getFaceList } from "../websocket";
 
-export function getPersonEntities(states) {
+export async function getPersonEntities(hass) {
   const people: PersonInfo[] = [];
+  const registeredFacesNames = await getRegisteredFacesNames(hass);
+  const states = hass.states;
   for (const [key, value] of Object.entries(states)) {
     if (computeDomain(key) === "person") {
       people.push({
@@ -10,17 +13,18 @@ export function getPersonEntities(states) {
         picture: value.attributes.entity_picture,
         id: value.attributes.id,
         user_id: value.attributes.user_id,
-        registered_status: _computeStatus(value.entity_id),
+        registered_status: registeredFacesNames.includes(value.attributes.friendly_name),
       });
     }
   }
   return people;
 }
 
-export function computeDomain(entity: string): string {
-  return entity.split(".")[0];
+export async function getRegisteredFacesNames(hass): Promise<string[]> {
+  const faceList = await getFaceList(hass);
+  return faceList;
 }
 
-export function _computeStatus(entity_id: string): boolean {
-  return true; //Default ouput for now
+export function computeDomain(entity: string): string {
+  return entity.split(".")[0];
 }

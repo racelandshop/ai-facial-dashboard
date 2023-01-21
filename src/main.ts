@@ -20,11 +20,12 @@ declare global {
   // for fire event
   interface HASSDomEvents {
     "update-person-info": { personInfo: PersonInfo };
+    "update-ai-dashboard": undefined;
   }
 }
 
 @customElement("ai-dashboard")
-class cameraFrontend extends Dashboard {
+class DashboardFrontend extends Dashboard {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public _personEntities: PersonInfo[] = [];
@@ -36,10 +37,16 @@ class cameraFrontend extends Dashboard {
   protected async firstUpdated(changedProps) {
     super.firstUpdated(changedProps);
 
+    this._personEntities = await getPersonEntities(this.hass);
+
     this._applyTheme();
 
     this.addEventListener("update-person-info", (ev) => {
       showPersonAIDataDialog(this, { personInfo: ev.detail.personInfo });
+    });
+
+    this.addEventListener("update-ai-dashboard", () => {
+      this._updateAIDashboard();
     });
 
     makeDialogManager(this, this.shadowRoot!);
@@ -56,10 +63,6 @@ class cameraFrontend extends Dashboard {
     }
   }
 
-  // protected _updateCameraDashboard() {
-  //   this.personEntities = getPersonEntities(this.hass.states);
-  // }
-
   protected computeStatusString(registered_status: boolean): string {
     if (registered_status) {
       return localize("status.person_registered");
@@ -72,29 +75,36 @@ class cameraFrontend extends Dashboard {
       return html``;
     }
 
-    this._personEntities = getPersonEntities(this.hass.states);
-
     return html`
       <div class="title">${localize("common.person")}</div>
       <div class="person-entities">
         ${this._personEntities.map(
           (entry) =>
             html`<div class="ai-person">
-              <person-big-badge slot="item-icon" .person=${entry}></person-big-badge
-              ><paper-item-body class="entry-text"> ${entry.name} </paper-item-body>
-              <paper-item-body
-                class="entry-text ${classMap({
-                  registered: entry.registered_status === true,
-                  unregistered: entry.registered_status === false,
-                })}"
-              >
-                ${this.computeStatusString(entry.registered_status)}
-              </paper-item-body>
+              <person-big-badge
+                class="ai-person-icon"
+                slot="item-icon"
+                .person=${entry}
+              ></person-big-badge>
             </div>`
         )}
       </div>
     `;
   }
+
+  protected async _updateAIDashboard() {
+    this._personEntities = await getPersonEntities(this.hass);
+  }
+
+  // <paper-item-body class="entry-text"> ${entry.name}</paper-item-body>
+  // <paper-item-body
+  //   class="entry-text ${classMap({
+  //     registered: entry.registered_status === true,
+  //     unregistered: entry.registered_status === false,
+  //   })}"
+  // >
+  //   ${this.computeStatusString(entry.registered_status)}
+  // </paper-item-body>
 
   static get styles() {
     return css`
@@ -117,17 +127,8 @@ class cameraFrontend extends Dashboard {
       .ai-person {
         width: 200px;
       }
-      .entry-text {
-        font-size: 200%;
-        margin-top: 10%;
-        margin-right: 20%;
-      }
-      .entry-text.registered {
-        font-size: 150%;
-      }
-      .entry-text.unregistered {
-        font-size: 150%;
-        color: blue;
+      .ai-person-icon {
+        cursor: pointer;
       }
       ha-person-badge {
         display: flex;

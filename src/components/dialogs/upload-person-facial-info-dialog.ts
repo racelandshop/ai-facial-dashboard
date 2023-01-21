@@ -1,7 +1,8 @@
 import "@material/mwc-button/mwc-button";
 import { mdiFaceRecognition, mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators";
+import { classMap } from "lit/directives/class-map";
 import type { HassDialog } from "../../../frontend-release/src/dialogs/make-dialog-manager";
 import { fireEvent } from "../../../frontend-release/src/common/dom/fire_event";
 import type { HomeAssistant } from "../../../frontend-release/src/types";
@@ -10,6 +11,13 @@ import "../../../frontend-release/src/components/ha-header-bar";
 import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
 import { localize } from "../../localize/localize";
+import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
+
+declare global {
+  interface HASSDomEvents {
+    "file-picked": { files: FileList };
+  }
+}
 
 @customElement("upload-ai-facial-data-dialog")
 export class HuiDialogAddAiFacialData
@@ -18,10 +26,16 @@ export class HuiDialogAddAiFacialData
 {
   @property({ attribute: false }) protected hass!: HomeAssistant;
 
+  @property() public accept!: string;
+
   @property({ attribute: false })
   public personInfo!: PersonInfo;
 
+  @state() private _drag = false;
+
   @state() private _params?: aiPersonDialogParams;
+
+  @query("#input") private _input?: HTMLInputElement;
 
   public async showDialog(params: aiPersonDialogParams): Promise<void> {
     this._params = params;
@@ -60,28 +74,79 @@ export class HuiDialogAddAiFacialData
           <p class="small-text">${localize("dialog_text.upload_message_note")}</p>
         </div>
         <div class="options">
-          <mwc-button class="button-confirm" @click=${this._upload}
-            >${localize("common.upload_confirm")}</mwc-button
-          >
+          <mwc-button class="button-confirm">
+            <label
+              for="input"
+              class="mdc-field mdc-field--filled ${classMap({
+                "mdc-field--focused": this._drag,
+              })}"
+              @drop=${this._handleDrop}
+              @dragenter=${this._handleDragStart}
+              @dragover=${this._handleDragStart}
+              @dragleave=${this._handleDragEnd}
+              @dragend=${this._handleDragEnd}
+            >
+              <input
+                id="input"
+                type="file"
+                class="mdc-text-field__input file"
+                accept=${this.accept}
+                @change=${this._handleFilePicked}
+                aria-labelledby="label"
+              />${localize("common.upload_confirm")}
+            </label>
+          </mwc-button>
         </div>
       </ha-dialog>
     `;
   }
 
-  private async _upload(ev?: Event) {
-    if (ev) {
-      ev.stopPropagation();
+  private _handleDrop(ev: DragEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (ev.dataTransfer?.files) {
+      fireEvent(this, "file-picked", { files: ev.dataTransfer.files });
     }
-    console.warn("Method delete data no yet implemented");
-    // const result = await removeCamera(
-    //   this.hass,
-    //   this.personInfo.unique_id,
-    //   this.personInfo.entity_id
-    // );
-    // if (result === true) {
-    //   this.closeDialog();
-    //   fireEvent(this, "update-camera-dashboard");
-    // }
+    this._drag = false;
+  }
+
+  private _handleDragStart(ev: DragEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this._drag = true;
+  }
+
+  private _handleDragEnd(ev: DragEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this._drag = false;
+  }
+
+  private async _handleFilePicked(ev) {
+    const file = ev.target.files[0];
+    const media = await createImage(this.hass, file);
+    const url = this.generateImageUrl(media);
+    this.hass.callService("ai_dashboard", "teach_face", {
+      name: this.personInfo.name,
+      url: url,
+      entity_id: "image_processing.face_recognition_central",
+    });
+
+    fireEvent(this, "update-ai-dashboard");
+    this.closeDialog();
+  }
+
+  private generateImageUrl(media) {
+    const url = generateImageThumbnailUrl(media.id, 512);
+
+    const current_url = window.location.href;
+    const url_object = new URL(current_url);
+
+    const protocol = url_object.protocol;
+    const domain = url_object.hostname;
+    const port = url_object.port;
+
+    return protocol + "//" + domain + ":" + port + url;
   }
 
   static get styles(): CSSResultGroup {
@@ -123,7 +188,6 @@ export class HuiDialogAddAiFacialData
           font-size: 16px;
           margin: 4px 2px;
           border-radius: 30px;
-          cursor: pointer;
           box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
           --mdc-theme-primary: white;
           margin-bottom: 40px;
@@ -131,10 +195,15 @@ export class HuiDialogAddAiFacialData
         .button-confirm {
           background-color: #4ba2ff;
         }
+        input.file {
+          display: none;
+        }
+        label.mdc-field {
+          cursor: pointer;
+        }
         .header {
           height: 80px;
         }
-
         .cancel-icon {
           float: right;
           width: 40px;

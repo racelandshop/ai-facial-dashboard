@@ -5,11 +5,11 @@
     "confirm": "Confirm",
     "delete_facial_data": "Delete Facial Data",
     "upload_facial_data": "Upload Facial Data",
-    "upload_confirm": "Upload photos"
+    "upload_confirm": "Upload photo"
   },
   "status":{
     "person_registered": "Registered",
-    "person_unregistered": "Not Registado"
+    "person_unregistered": "Not Registered"
   },
   "dialog_text": {
     "verify_action": "This action can not be undone",
