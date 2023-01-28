@@ -4,6 +4,9 @@ import { getFaceList } from "../websocket";
 export async function getPersonEntities(hass) {
   const people: PersonInfo[] = [];
   const registeredFacesNames = await getRegisteredFacesNames(hass);
+  if (registeredFacesNames == "Deepstack Error") {
+    return undefined;
+  }
   const states = hass.states;
   for (const [key, value] of Object.entries(states)) {
     if (computeDomain(key) === "person") {
@@ -20,7 +23,7 @@ export async function getPersonEntities(hass) {
   return people;
 }
 
-export async function getRegisteredFacesNames(hass): Promise<string[]> {
+export async function getRegisteredFacesNames(hass) {
   const faceList = await getFaceList(hass);
   return faceList;
 }

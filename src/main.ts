@@ -1,12 +1,9 @@
 import { html, PropertyValues, TemplateResult, css } from "lit";
 import { customElement, property } from "lit/decorators";
-//import { classMap } from "lit/directives/class-map";
 import "../frontend-release/src/resources/ha-style";
 import "../frontend-release/src/components/search-input";
 import "../frontend-release/src/components/ha-fab";
-//import { showDialog } from "../frontend-release/src/dialogs/make-dialog-manager";
 import { applyThemesOnElement } from "../frontend-release/src/common/dom/apply_themes_on_element";
-//import { fireEvent } from "../frontend-release/src/common/dom/fire_event";
 import { makeDialogManager } from "../frontend-release/src/dialogs/make-dialog-manager";
 import { HomeAssistant } from "../frontend-release/src/types";
 import "./components/person-big-badge";
@@ -28,7 +25,7 @@ declare global {
 class DashboardFrontend extends Dashboard {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ attribute: false }) public _personEntities: PersonInfo[] = [];
+  @property({ attribute: false }) public _personEntities!: PersonInfo[] | undefined;
 
   public connectedCallback() {
     super.connectedCallback();
@@ -71,10 +68,19 @@ class DashboardFrontend extends Dashboard {
   }
 
   protected render(): TemplateResult | void {
+    console.log("PersonINfo", this._personEntities);
     if (!this.hass) {
       return html``;
     }
 
+    if (!this._personEntities) {
+      return html`<div class="deepstackError">${localize("error.deepstackErrorMessage")}</div>
+        <mwc-button class="button-refresh" @click=${this._updateAIDashboard}
+          >${localize("common.refresh")}</mwc-button
+        >`;
+    }
+
+    console.log("Is this ruuning? ");
     return html`
       <div class="title">${localize("common.person")}</div>
       <div class="person-entities">
@@ -128,6 +134,23 @@ class DashboardFrontend extends Dashboard {
         width: 200px;
       }
       .ai-person-icon {
+        cursor: pointer;
+      }
+      .deepstackError {
+        padding: 10% 5% 10% 5%;
+        color: white;
+        margin-bottom: 2%;
+        font-size: 30px;
+      }
+      .button-refresh {
+        background-color: #969090;
+        border: none;
+        color: white;
+        padding: 1% 2% 1% 2%;
+        text-align: center;
+        font-size: 20px;
+        border-radius: 15%;
+        margin: 0% 44% 0 44%;
         cursor: pointer;
       }
       ha-person-badge {

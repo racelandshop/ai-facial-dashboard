@@ -5,7 +5,8 @@
     "confirm": "Confirm",
     "delete_facial_data": "Delete Facial Data",
     "upload_facial_data": "Upload Facial Data",
-    "upload_confirm": "Upload photo"
+    "upload_confirm": "Upload photo",
+    "refresh": "Refresh page"
   },
   "status":{
     "person_registered": "Registered",
@@ -15,5 +16,8 @@
     "verify_action": "This action can not be undone",
     "upload_message": "Please take and upload facial photos",
     "upload_message_note": "Note: The more photos of different angles are uploaded the more efficient the facial recognition will be"
+  },
+  "error": {
+    "deepstackErrorMessage": "Unable to connect to deepstack. Ensure the integration was correctly configured and that deepstack is running in the background"
   }
 }
