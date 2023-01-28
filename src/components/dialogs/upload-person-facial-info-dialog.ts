@@ -1,4 +1,5 @@
 import "@material/mwc-button/mwc-button";
+import { mdiCheckboxMarkedCircle } from "@mdi/js";
 import { mdiFaceRecognition, mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
@@ -13,6 +14,8 @@ import { PersonInfo } from "../../types";
 import { localize } from "../../localize/localize";
 import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
 import { teachFaceInformation } from "../../websocket";
+
+// In the backend, I need to make sure there is a check for a face (plus send a notification)
 
 declare global {
   interface HASSDomEvents {
@@ -29,14 +32,14 @@ export class HuiDialogAddAiFacialData
 
   @property() public accept!: string;
 
+  @property() public url_list!: string[] | undefined;
+
   @property({ attribute: false })
   public personInfo!: PersonInfo;
 
   @state() private _drag = false;
 
   @state() private _params?: aiPersonDialogParams;
-
-  @query("#input") private _input?: HTMLInputElement;
 
   public async showDialog(params: aiPersonDialogParams): Promise<void> {
     this._params = params;
@@ -45,6 +48,7 @@ export class HuiDialogAddAiFacialData
 
   public closeDialog(): void {
     this._params = undefined;
+    this.url_list = undefined;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
@@ -53,6 +57,7 @@ export class HuiDialogAddAiFacialData
       return html``;
     }
 
+    console.log("Rendering...");
     return html`
       <ha-dialog
         open
@@ -71,11 +76,24 @@ export class HuiDialogAddAiFacialData
           <ha-svg-icon class="header-icon" slot="icon" .path=${mdiFaceRecognition}></ha-svg-icon>
         </div>
         <div class="text">
-          <p class="big-text">${localize("dialog_text.upload_message")}</p>
+        ${
+          this.url_list === undefined
+            ? html`<p class="big-text">${localize("dialog_text.upload_message")}</p>`
+            : html`<p class="big-text">
+                ${localize(
+                  "dialog_text.upload_photo_n",
+                  "{n_photos}",
+                  String(this.url_list.length)
+                )}
+              </p>`
+        }
           <p class="small-text">${localize("dialog_text.upload_message_note")}</p>
+
+
+          </p>
         </div>
         <div class="options">
-          <mwc-button class="button-confirm">
+          <mwc-button class="button-upload">
             <label
               for="input"
               class="mdc-field mdc-field--filled ${classMap({
@@ -98,6 +116,18 @@ export class HuiDialogAddAiFacialData
               />${localize("common.upload_confirm")}
             </label>
           </mwc-button>
+          ${
+            this.url_list === undefined
+              ? html``
+              : html` <mwc-button class="button-confirm" @click=${this._confirm}
+                  ><ha-svg-icon
+                    .path=${mdiCheckboxMarkedCircle}
+                    class="confirm-icon"
+                    slot="icon"
+                  ></ha-svg-icon
+                  >${localize("common.confirm")}</mwc-button
+                >`
+          }
         </div>
       </ha-dialog>
     `;
@@ -125,17 +155,24 @@ export class HuiDialogAddAiFacialData
   }
 
   private async _handleFilePicked(ev) {
-    const url_list: string[] = [];
+    const url_list = [];
     const n_files = ev.target.files.length;
     const file_list = ev.target.files;
     for (let i = 0; i <= n_files - 1; i++) {
       const media = await createImage(this.hass, file_list[i]);
-      url_list.push(this.generateImageUrl(media));
+      const url = this.generateImageUrl(media);
+      url_list.push(url);
     }
-    const result = await teachFaceInformation(this.hass, this.personInfo?.name, url_list);
-    if (result === true) {
-      fireEvent(this, "update-ai-dashboard");
-      this.closeDialog();
+    this.url_list = url_list;
+  }
+
+  private async _confirm() {
+    if (this.url_list != undefined) {
+      const result = await teachFaceInformation(this.hass, this.personInfo?.name, this.url_list);
+      if (result === true) {
+        fireEvent(this, "update-ai-dashboard");
+        this.closeDialog();
+      }
     }
   }
 
@@ -197,6 +234,10 @@ export class HuiDialogAddAiFacialData
         }
         .button-confirm {
           background-color: #4ba2ff;
+          float: right;
+        }
+        .button-upload {
+          background-color: #4ba2ff;
         }
         input.file {
           display: none;
@@ -231,6 +272,7 @@ export class HuiDialogAddAiFacialData
           height: 60px;
           margin-top: 10%;
           margin-bottom: 10%;
+          margin-left: 6%;
           color: #7b7b7b;
         }
         .text {
