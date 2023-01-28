@@ -3,11 +3,11 @@ import { mdiFaceRecognition, mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
+import "../../../frontend-release/src/components/ha-dialog";
+import "../../../frontend-release/src/components/ha-header-bar";
 import type { HassDialog } from "../../../frontend-release/src/dialogs/make-dialog-manager";
 import { fireEvent } from "../../../frontend-release/src/common/dom/fire_event";
 import type { HomeAssistant } from "../../../frontend-release/src/types";
-import "../../../frontend-release/src/components/ha-dialog";
-import "../../../frontend-release/src/components/ha-header-bar";
 import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
 import { localize } from "../../localize/localize";
@@ -125,11 +125,14 @@ export class HuiDialogAddAiFacialData
   }
 
   private async _handleFilePicked(ev) {
-    //const urlList = [];
-    const file = ev.target.files[0];
-    const media = await createImage(this.hass, file);
-    const url = this.generateImageUrl(media);
-    const result = await teachFaceInformation(this.hass, this.personInfo?.name, url);
+    const url_list: string[] = [];
+    const n_files = ev.target.files.length;
+    const file_list = ev.target.files;
+    for (let i = 0; i <= n_files - 1; i++) {
+      const media = await createImage(this.hass, file_list[i]);
+      url_list.push(this.generateImageUrl(media));
+    }
+    const result = await teachFaceInformation(this.hass, this.personInfo?.name, url_list);
     if (result === true) {
       fireEvent(this, "update-ai-dashboard");
       this.closeDialog();

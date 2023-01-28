@@ -68,7 +68,6 @@ class DashboardFrontend extends Dashboard {
   }
 
   protected render(): TemplateResult | void {
-    console.log("PersonINfo", this._personEntities);
     if (!this.hass) {
       return html``;
     }
@@ -79,8 +78,6 @@ class DashboardFrontend extends Dashboard {
           >${localize("common.refresh")}</mwc-button
         >`;
     }
-
-    console.log("Is this ruuning? ");
     return html`
       <div class="title">${localize("common.person")}</div>
       <div class="person-entities">

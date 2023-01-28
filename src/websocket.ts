@@ -18,7 +18,7 @@ export const deleteFaceInformation = async (hass: HomeAssistant, name): Promise<
 export const teachFaceInformation = async (
   hass: HomeAssistant,
   name: string,
-  url: string
+  url: string[]
 ): Promise<any> => {
   const response = await hass.connection.sendMessagePromise<any>({
     type: "raceland_ai_dashboard/teach_face",
