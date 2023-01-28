@@ -1,6 +1,6 @@
 import { html, PropertyValues, TemplateResult, css } from "lit";
 import { customElement, property } from "lit/decorators";
-import { classMap } from "lit/directives/class-map";
+//import { classMap } from "lit/directives/class-map";
 import "../frontend-release/src/resources/ha-style";
 import "../frontend-release/src/components/search-input";
 import "../frontend-release/src/components/ha-fab";

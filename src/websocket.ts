@@ -14,3 +14,16 @@ export const deleteFaceInformation = async (hass: HomeAssistant, name): Promise<
   });
   return response;
 };
+
+export const teachFaceInformation = async (
+  hass: HomeAssistant,
+  name: string,
+  url: string
+): Promise<any> => {
+  const response = await hass.connection.sendMessagePromise<any>({
+    type: "raceland_ai_dashboard/teach_face",
+    name: name,
+    url: url,
+  });
+  return response;
+};

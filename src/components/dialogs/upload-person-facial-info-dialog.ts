@@ -12,6 +12,7 @@ import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
 import { localize } from "../../localize/localize";
 import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
+import { teachFaceInformation } from "../../websocket";
 
 declare global {
   interface HASSDomEvents {
@@ -89,6 +90,7 @@ export class HuiDialogAddAiFacialData
               <input
                 id="input"
                 type="file"
+                multiple
                 class="mdc-text-field__input file"
                 accept=${this.accept}
                 @change=${this._handleFilePicked}
@@ -123,17 +125,15 @@ export class HuiDialogAddAiFacialData
   }
 
   private async _handleFilePicked(ev) {
+    //const urlList = [];
     const file = ev.target.files[0];
     const media = await createImage(this.hass, file);
     const url = this.generateImageUrl(media);
-    this.hass.callService("ai_dashboard", "teach_face", {
-      name: this.personInfo.name,
-      url: url,
-      entity_id: "image_processing.face_recognition_central",
-    });
-
-    fireEvent(this, "update-ai-dashboard");
-    this.closeDialog();
+    const result = await teachFaceInformation(this.hass, this.personInfo?.name, url);
+    if (result === true) {
+      fireEvent(this, "update-ai-dashboard");
+      this.closeDialog();
+    }
   }
 
   private generateImageUrl(media) {
