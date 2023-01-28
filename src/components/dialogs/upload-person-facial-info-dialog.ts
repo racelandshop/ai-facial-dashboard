@@ -2,7 +2,7 @@ import "@material/mwc-button/mwc-button";
 import { mdiCheckboxMarkedCircle } from "@mdi/js";
 import { mdiFaceRecognition, mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
-import { customElement, property, query, state } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import "../../../frontend-release/src/components/ha-dialog";
 import "../../../frontend-release/src/components/ha-header-bar";
@@ -14,8 +14,6 @@ import { PersonInfo } from "../../types";
 import { localize } from "../../localize/localize";
 import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
 import { teachFaceInformation } from "../../websocket";
-
-// In the backend, I need to make sure there is a check for a face (plus send a notification)
 
 declare global {
   interface HASSDomEvents {
@@ -56,8 +54,6 @@ export class HuiDialogAddAiFacialData
     if (!this._params) {
       return html``;
     }
-
-    console.log("Rendering...");
     return html`
       <ha-dialog
         open
@@ -99,11 +95,6 @@ export class HuiDialogAddAiFacialData
               class="mdc-field mdc-field--filled ${classMap({
                 "mdc-field--focused": this._drag,
               })}"
-              @drop=${this._handleDrop}
-              @dragenter=${this._handleDragStart}
-              @dragover=${this._handleDragStart}
-              @dragleave=${this._handleDragEnd}
-              @dragend=${this._handleDragEnd}
             >
               <input
                 id="input"
@@ -131,27 +122,6 @@ export class HuiDialogAddAiFacialData
         </div>
       </ha-dialog>
     `;
-  }
-
-  private _handleDrop(ev: DragEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    if (ev.dataTransfer?.files) {
-      fireEvent(this, "file-picked", { files: ev.dataTransfer.files });
-    }
-    this._drag = false;
-  }
-
-  private _handleDragStart(ev: DragEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    this._drag = true;
-  }
-
-  private _handleDragEnd(ev: DragEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    this._drag = false;
   }
 
   private async _handleFilePicked(ev) {

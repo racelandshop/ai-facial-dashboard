@@ -99,16 +99,6 @@ class DashboardFrontend extends Dashboard {
     this._personEntities = await getPersonEntities(this.hass);
   }
 
-  // <paper-item-body class="entry-text"> ${entry.name}</paper-item-body>
-  // <paper-item-body
-  //   class="entry-text ${classMap({
-  //     registered: entry.registered_status === true,
-  //     unregistered: entry.registered_status === false,
-  //   })}"
-  // >
-  //   ${this.computeStatusString(entry.registered_status)}
-  // </paper-item-body>
-
   static get styles() {
     return css`
       .title {
@@ -149,23 +139,6 @@ class DashboardFrontend extends Dashboard {
         border-radius: 15%;
         margin: 0% 44% 0 44%;
         cursor: pointer;
-      }
-      ha-person-badge {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        width: 100%;
-        border-style: solid;
-        border-width: min(var(--ha-card-border-width, 1px), 10px);
-        border-color: transparent;
-        border-radius: var(--ha-card-border-radius, 4px);
-      }
-      ha-fab {
-        position: sticky;
-        float: right;
-        right: calc(16px + env(safe-area-inset-right));
-        bottom: calc(20px + env(safe-area-inset-bottom));
-        z-index: 1;
       }
     `;
   }
