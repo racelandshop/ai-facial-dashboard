@@ -3,7 +3,6 @@ import { mdiCheckboxMarkedCircle } from "@mdi/js";
 import { mdiFaceRecognition, mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators";
-import { classMap } from "lit/directives/class-map";
 import "../../../frontend-release/src/components/ha-dialog";
 import "../../../frontend-release/src/components/ha-header-bar";
 import type { HassDialog } from "../../../frontend-release/src/dialogs/make-dialog-manager";
@@ -35,7 +34,7 @@ export class HuiDialogAddAiFacialData
   @property({ attribute: false })
   public personInfo!: PersonInfo;
 
-  @state() private _drag = false;
+  @property() public uploadErrorMessage!: string | undefined;
 
   @state() private _params?: aiPersonDialogParams;
 
@@ -47,6 +46,7 @@ export class HuiDialogAddAiFacialData
   public closeDialog(): void {
     this._params = undefined;
     this.url_list = undefined;
+    this.uploadErrorMessage = undefined;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
@@ -73,16 +73,19 @@ export class HuiDialogAddAiFacialData
         </div>
         <div class="text">
         ${
-          this.url_list === undefined
+          this.url_list === undefined && this.uploadErrorMessage === undefined
             ? html`<p class="big-text">${localize("dialog_text.upload_message")}</p>`
-            : html`<p class="big-text">
+            : this.url_list !== undefined
+            ? html`<p class="big-text">
                 ${localize(
                   "dialog_text.upload_photo_n",
                   "{n_photos}",
                   String(this.url_list.length)
                 )}
               </p>`
+            : html`<p class="error-text-small">${this.uploadErrorMessage}</p>`
         }
+
           <p class="small-text">${localize("dialog_text.upload_message_note")}</p>
 
 
@@ -92,9 +95,7 @@ export class HuiDialogAddAiFacialData
           <mwc-button class="button-upload">
             <label
               for="input"
-              class="mdc-field mdc-field--filled ${classMap({
-                "mdc-field--focused": this._drag,
-              })}"
+              class="mdc-field mdc-field--filled"
             >
               <input
                 id="input"
@@ -134,6 +135,7 @@ export class HuiDialogAddAiFacialData
       url_list.push(url);
     }
     this.url_list = url_list;
+    this.uploadErrorMessage = undefined;
   }
 
   private async _confirm() {
@@ -142,6 +144,9 @@ export class HuiDialogAddAiFacialData
       if (result === true) {
         fireEvent(this, "update-ai-dashboard");
         this.closeDialog();
+      } else {
+        this.url_list = undefined;
+        this.uploadErrorMessage = localize("error.teachFaceErrorMessage");
       }
     }
   }
@@ -267,6 +272,17 @@ export class HuiDialogAddAiFacialData
           line-height: 21px;
           color: gray;
           margin: 10px;
+        }
+        .error-text-small {
+          margin-top: 10%;
+          font-family: "Roboto";
+          font-style: normal;
+          font-weight: 400;
+          font-size: 24px;
+          line-height: 21px;
+          color: red;
+          text-align: justify;
+          text-justify: inter-word;
         }
       `,
     ];
