@@ -275,6 +275,6 @@ export class HuiDialogAddAiFacialData
 
 declare global {
   interface HTMLElementTagNameMap {
-    "delete-camera-dialog": HuiDeleteDialogAiFacialData;
+    "upload-camera-dialog": HuiDialogAddAiFacialData;
   }
 }
