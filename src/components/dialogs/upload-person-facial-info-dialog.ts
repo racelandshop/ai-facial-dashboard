@@ -5,13 +5,13 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import "../../../frontend-release/src/components/ha-dialog";
 import "../../../frontend-release/src/components/ha-header-bar";
+import "../file-upload";
 import type { HassDialog } from "../../../frontend-release/src/dialogs/make-dialog-manager";
 import { fireEvent } from "../../../frontend-release/src/common/dom/fire_event";
 import type { HomeAssistant } from "../../../frontend-release/src/types";
 import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
 import { localize } from "../../localize/localize";
-import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
 import { teachFaceInformation } from "../../websocket";
 
 declare global {
@@ -26,8 +26,6 @@ export class HuiDialogAddAiFacialData
   implements HassDialog<aiPersonDialogParams>
 {
   @property({ attribute: false }) protected hass!: HomeAssistant;
-
-  @property() public accept!: string;
 
   @property() public url_list!: string[] | undefined;
 
@@ -89,26 +87,16 @@ export class HuiDialogAddAiFacialData
           </p>
         </div>
         <div class="options">
-          <mwc-button class="button-upload">
-            <label
-              for="input"
-              class="mdc-field mdc-field--filled"
-            >
-              <input
-                id="input"
-                type="file"
-                multiple
-                class="mdc-text-field__input file"
-                accept=${this.accept}
-                @change=${this._handleFilePicked}
-                aria-labelledby="label"
-              />${localize("common.upload_confirm")}
-            </label>
-          </mwc-button>
+        <file-upload class="button-upload"
+          .hass=${this.hass}
+          @files-url-generated=${this._handleFilePicked}
+          accept="image/png, image/jpeg, image/gif"
+          >
+        </file-upload>
           ${
             this.url_list === undefined
               ? html``
-              : html`<mwc-button class="button-confirm" @click=${this._confirm}
+              : html` <mwc-button class="button-confirm" @click=${this._confirm}
                   ><ha-svg-icon
                     .path=${mdiCheckboxMarkedCircle}
                     class="confirm-icon"
@@ -123,15 +111,7 @@ export class HuiDialogAddAiFacialData
   }
 
   private async _handleFilePicked(ev) {
-    const url_list = [];
-    const n_files = ev.target.files.length;
-    const file_list = ev.target.files;
-    for (let i = 0; i <= n_files - 1; i++) {
-      const media = await createImage(this.hass, file_list[i]);
-      const url = this.generateImageUrl(media);
-      url_list.push(url);
-    }
-    this.url_list = url_list;
+    this.url_list = ev.detail.url_list;
     this.uploadErrorMessage = undefined;
   }
 
@@ -146,19 +126,6 @@ export class HuiDialogAddAiFacialData
         this.uploadErrorMessage = localize("error.teachFaceErrorMessage");
       }
     }
-  }
-
-  private generateImageUrl(media) {
-    const url = generateImageThumbnailUrl(media.id, 512);
-
-    const current_url = window.location.href;
-    const url_object = new URL(current_url);
-
-    const protocol = url_object.protocol;
-    const domain = url_object.hostname;
-    const port = url_object.port;
-
-    return protocol + "//" + domain + ":" + port + url;
   }
 
   static get styles(): CSSResultGroup {
@@ -192,7 +159,7 @@ export class HuiDialogAddAiFacialData
           flex-shrink: 0;
           border-bottom: 1px solid var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12));
         }
-        mwc-button {
+        file-upload {
           padding: 10px;
           text-align: center;
           text-decoration: none;
@@ -204,11 +171,25 @@ export class HuiDialogAddAiFacialData
           --mdc-theme-primary: white;
           margin-bottom: 40px;
         }
+        mwc-button {
+          padding: 10px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          border-radius: 30px;
+          cursor: pointer;
+          box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
+          --mdc-theme-primary: white;
+          margin-bottom: 40px;
+        }
         .button-confirm {
           background-color: #4ba2ff;
           float: right;
         }
         .button-upload {
+          float: left;
           background-color: #4ba2ff;
         }
         input.file {

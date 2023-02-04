@@ -7,10 +7,10 @@ import { fireEvent } from "../../../frontend-release/src/common/dom/fire_event";
 import type { HomeAssistant } from "../../../frontend-release/src/types";
 import "../../../frontend-release/src/components/ha-dialog";
 import "../../../frontend-release/src/components/ha-header-bar";
+import "../file-upload";
 import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
 import { deleteFaceInformation, teachFaceInformation } from "../../websocket";
-import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
 import { localize } from "../../localize/localize";
 
 @customElement("update-ai-facial-data-dialog")
@@ -22,8 +22,6 @@ export class HuiDeleteDialogAiFacialData
 
   @property({ attribute: false })
   public personInfo!: PersonInfo;
-
-  @property() public accept!: string;
 
   @property() public url_list!: string[] | undefined;
 
@@ -80,19 +78,13 @@ export class HuiDeleteDialogAiFacialData
           <p class="small-text">${localize("dialog_text.verify_action")}</p>
         </div>
         <div class="options">
-          <mwc-button class="button-upload">
-            <label for="input" class="mdc-field mdc-field--filled">
-              <input
-                id="input"
-                type="file"
-                multiple
-                class="mdc-text-field__input file"
-                accept=${this.accept}
-                @change=${this._handleFilePicked}
-                aria-labelledby="label"
-              />${localize("common.upload_confirm")}
-            </label>
-          </mwc-button>
+          <file-upload
+            class="button-upload"
+            .hass=${this.hass}
+            @files-url-generated=${this._handleFilePicked}
+            accept="image/png, image/jpeg, image/gif"
+          >
+          </file-upload>
           ${this.url_list === undefined
             ? html`<mwc-button class="button-delete" @click=${this._delete}
                 ><ha-svg-icon class="confirm-icon" slot="icon" .path=${mdiDelete}></ha-svg-icon
@@ -112,15 +104,7 @@ export class HuiDeleteDialogAiFacialData
   }
 
   private async _handleFilePicked(ev) {
-    const url_list = [];
-    const n_files = ev.target.files.length;
-    const file_list = ev.target.files;
-    for (let i = 0; i <= n_files - 1; i++) {
-      const media = await createImage(this.hass, file_list[i]);
-      const url = this.generateImageUrl(media);
-      url_list.push(url);
-    }
-    this.url_list = url_list;
+    this.url_list = ev.detail.url_list;
     this.uploadErrorMessage = undefined;
   }
 
@@ -135,19 +119,6 @@ export class HuiDeleteDialogAiFacialData
         this.uploadErrorMessage = localize("error.teachFaceErrorMessage");
       }
     }
-  }
-
-  private generateImageUrl(media) {
-    const url = generateImageThumbnailUrl(media.id, 512);
-
-    const current_url = window.location.href;
-    const url_object = new URL(current_url);
-
-    const protocol = url_object.protocol;
-    const domain = url_object.hostname;
-    const port = url_object.port;
-
-    return protocol + "//" + domain + ":" + port + url;
   }
 
   private async _delete(ev?: Event) {
@@ -223,6 +194,18 @@ export class HuiDeleteDialogAiFacialData
           margin: 4px 2px;
           border-radius: 30px;
           cursor: pointer;
+          box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
+          --mdc-theme-primary: white;
+          margin-bottom: 40px;
+        }
+        file-upload {
+          padding: 10px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          border-radius: 30px;
           box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
           --mdc-theme-primary: white;
           margin-bottom: 40px;
