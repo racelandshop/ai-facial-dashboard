@@ -3,7 +3,8 @@
     "person": "People",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "delete_facial_data": "Delete Facial Data",
+    "delete": "Delete",
+    "update_facial_data": "Update Facial data",
     "upload_facial_data": "Upload Facial Data",
     "upload_confirm": "Upload photo",
     "refresh": "Refresh page",
@@ -14,7 +15,7 @@
     "person_unregistered": "Not Registered"
   },
   "dialog_text": {
-    "verify_action": "This action can not be undone",
+    "verify_action": "Upload more photos or delete existing photos from the database. Deleting photos can not be recovered",
     "upload_message": "Please take and upload facial photos",
     "upload_message_note": "Note: The more photos of different angles are uploaded the more efficient the facial recognition will be",
     "upload_photo_n": "Photos uploading for facial recongition: {n_photos}"

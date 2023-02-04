@@ -1,38 +1,31 @@
 import "@material/mwc-button/mwc-button";
-import { mdiCheckboxMarkedCircle } from "@mdi/js";
-import { mdiFaceRecognition, mdiClose } from "@mdi/js";
+import { mdiDelete, mdiClose, mdiFaceRecognition, mdiCheckboxMarkedCircle } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators";
-import "../../../frontend-release/src/components/ha-dialog";
-import "../../../frontend-release/src/components/ha-header-bar";
 import type { HassDialog } from "../../../frontend-release/src/dialogs/make-dialog-manager";
 import { fireEvent } from "../../../frontend-release/src/common/dom/fire_event";
 import type { HomeAssistant } from "../../../frontend-release/src/types";
+import "../../../frontend-release/src/components/ha-dialog";
+import "../../../frontend-release/src/components/ha-header-bar";
 import { aiPersonDialogParams } from "../../helpers/show-ai-dialog";
 import { PersonInfo } from "../../types";
-import { localize } from "../../localize/localize";
+import { deleteFaceInformation, teachFaceInformation } from "../../websocket";
 import { createImage, generateImageThumbnailUrl } from "../../../frontend-release/src/data/image";
-import { teachFaceInformation } from "../../websocket";
+import { localize } from "../../localize/localize";
 
-declare global {
-  interface HASSDomEvents {
-    "file-picked": { files: FileList };
-  }
-}
-
-@customElement("upload-ai-facial-data-dialog")
-export class HuiDialogAddAiFacialData
+@customElement("update-ai-facial-data-dialog")
+export class HuiDeleteDialogAiFacialData
   extends LitElement
   implements HassDialog<aiPersonDialogParams>
 {
   @property({ attribute: false }) protected hass!: HomeAssistant;
 
+  @property({ attribute: false })
+  public personInfo!: PersonInfo;
+
   @property() public accept!: string;
 
   @property() public url_list!: string[] | undefined;
-
-  @property({ attribute: false })
-  public personInfo!: PersonInfo;
 
   @property() public uploadErrorMessage!: string | undefined;
 
@@ -54,12 +47,13 @@ export class HuiDialogAddAiFacialData
     if (!this._params) {
       return html``;
     }
+
     return html`
       <ha-dialog
         open
         scrimClickAction
         hideActions
-        .heading=${localize("common.upload_facial_data")}
+        .heading=${localize("common.update_facial_data")}
         @closed=${this.closeDialog}
       >
         <div class="header" slot="heading">
@@ -72,9 +66,8 @@ export class HuiDialogAddAiFacialData
           <ha-svg-icon class="header-icon" slot="icon" .path=${mdiFaceRecognition}></ha-svg-icon>
         </div>
         <div class="text">
-        ${
-          this.url_list === undefined && this.uploadErrorMessage === undefined
-            ? html`<p class="big-text">${localize("dialog_text.upload_message")}</p>`
+          ${this.url_list === undefined && this.uploadErrorMessage === undefined
+            ? html`<p class="big-text">${localize("common.update_facial_data")}</p>`
             : this.url_list !== undefined
             ? html`<p class="big-text">
                 ${localize(
@@ -83,17 +76,12 @@ export class HuiDialogAddAiFacialData
                   String(this.url_list.length)
                 )}
               </p>`
-            : html`<p class="error-text-small">${this.uploadErrorMessage}</p>`
-        }
-          <p class="small-text">${localize("dialog_text.upload_message_note")}</p>
-          </p>
+            : html`<p class="error-text-small">${this.uploadErrorMessage}</p>`}
+          <p class="small-text">${localize("dialog_text.verify_action")}</p>
         </div>
         <div class="options">
           <mwc-button class="button-upload">
-            <label
-              for="input"
-              class="mdc-field mdc-field--filled"
-            >
+            <label for="input" class="mdc-field mdc-field--filled">
               <input
                 id="input"
                 type="file"
@@ -105,18 +93,19 @@ export class HuiDialogAddAiFacialData
               />${localize("common.upload_confirm")}
             </label>
           </mwc-button>
-          ${
-            this.url_list === undefined
-              ? html``
-              : html`<mwc-button class="button-confirm" @click=${this._confirm}
-                  ><ha-svg-icon
-                    .path=${mdiCheckboxMarkedCircle}
-                    class="confirm-icon"
-                    slot="icon"
-                  ></ha-svg-icon
-                  >${localize("common.confirm")}</mwc-button
-                >`
-          }
+          ${this.url_list === undefined
+            ? html`<mwc-button class="button-delete" @click=${this._delete}
+                ><ha-svg-icon class="confirm-icon" slot="icon" .path=${mdiDelete}></ha-svg-icon
+                >${localize("common.delete")}</mwc-button
+              >`
+            : html`<mwc-button class="button-confirm" @click=${this._confirm}
+                ><ha-svg-icon
+                  .path=${mdiCheckboxMarkedCircle}
+                  class="confirm-icon"
+                  slot="icon"
+                ></ha-svg-icon
+                >${localize("common.confirm")}</mwc-button
+              >`}
         </div>
       </ha-dialog>
     `;
@@ -161,6 +150,18 @@ export class HuiDialogAddAiFacialData
     return protocol + "//" + domain + ":" + port + url;
   }
 
+  private async _delete(ev?: Event) {
+    if (ev) {
+      ev.stopPropagation();
+    }
+
+    const result = await deleteFaceInformation(this.hass, this.personInfo?.name);
+    if (result === true) {
+      fireEvent(this, "update-ai-dashboard");
+      this.closeDialog();
+    }
+  }
+
   static get styles(): CSSResultGroup {
     return [
       css`
@@ -190,26 +191,19 @@ export class HuiDialogAddAiFacialData
           --mdc-theme-on-primary: var(--primary-text-color);
           --mdc-theme-primary: var(--mdc-theme-surface);
           flex-shrink: 0;
-          border-bottom: 1px solid var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12));
+          border-bottom: none;
         }
-        mwc-button {
-          padding: 10px;
-          text-align: center;
-          text-decoration: none;
-          display: inline-block;
-          font-size: 16px;
-          margin: 4px 2px;
-          border-radius: 30px;
-          box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
-          --mdc-theme-primary: white;
-          margin-bottom: 40px;
+        .button-upload {
+          background-color: #4ba2ff;
+          float: left;
         }
         .button-confirm {
           background-color: #4ba2ff;
           float: right;
         }
-        .button-upload {
+        .button-delete {
           background-color: #4ba2ff;
+          float: right;
         }
         input.file {
           display: none;
@@ -220,12 +214,18 @@ export class HuiDialogAddAiFacialData
         .header {
           height: 80px;
         }
-        .cancel-icon {
-          float: right;
-          width: 40px;
-          height: 40px;
+        mwc-button {
+          padding: 10px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          border-radius: 30px;
           cursor: pointer;
-          padding: 20px 20px 20px 20px;
+          box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
+          --mdc-theme-primary: white;
+          margin-bottom: 40px;
         }
         .options {
           width: 100%;
@@ -241,6 +241,13 @@ export class HuiDialogAddAiFacialData
           margin-bottom: 10%;
           margin-left: 6%;
           color: #7b7b7b;
+        }
+        .cancel-icon {
+          float: right;
+          width: 40px;
+          height: 40px;
+          cursor: pointer;
+          padding: 20px 20px 20px 20px;
         }
         .text {
           margin-top: 10%;
@@ -283,6 +290,6 @@ export class HuiDialogAddAiFacialData
 
 declare global {
   interface HTMLElementTagNameMap {
-    "upload-camera-dialog": HuiDialogAddAiFacialData;
+    "delete-camera-dialog": HuiDeleteDialogAiFacialData;
   }
 }

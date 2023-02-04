@@ -6,7 +6,7 @@ export interface aiPersonDialogParams {
 }
 
 export const importDeletePerson = () =>
-  import("../components/dialogs/delete-person-facial-info-dialog");
+  import("../components/dialogs/update-person-facial-info-dialog");
 
 export const importAddPerson = () =>
   import("../components/dialogs/upload-person-facial-info-dialog");
@@ -23,7 +23,7 @@ export const showPersonAIDataDialog = (
     });
   } else {
     fireEvent(element, "show-dialog", {
-      dialogTag: "delete-ai-facial-data-dialog",
+      dialogTag: "update-ai-facial-data-dialog",
       dialogImport: importDeletePerson,
       dialogParams: aiPersonDialog,
     });
