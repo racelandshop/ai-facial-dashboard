@@ -73,7 +73,9 @@ class DashboardFrontend extends Dashboard {
     }
 
     if (!this._personEntities) {
-      return html`<div class="deepstackError">${localize("error.deepstackErrorMessage")}</div>
+      return html`<div class="CompreFaceErrorMessage">
+          ${localize("error.CompreFaceErrorMessage")}
+        </div>
         <mwc-button class="button-refresh" @click=${this._updateAIDashboard}
           >${localize("common.refresh")}</mwc-button
         >`;
@@ -123,7 +125,7 @@ class DashboardFrontend extends Dashboard {
       .ai-person-icon {
         cursor: pointer;
       }
-      .deepstackError {
+      .CompreFaceErrorMessage {
         padding: 10% 5% 10% 5%;
         color: white;
         margin-bottom: 2%;

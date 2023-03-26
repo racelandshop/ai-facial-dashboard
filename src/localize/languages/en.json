@@ -21,7 +21,7 @@
     "upload_photo_n": "Photos uploading for facial recongition: {n_photos}"
   },
   "error": {
-    "deepstackErrorMessage": "Unable to connect to deepstack. Ensure the integration was correctly configured and that deepstack is running in the background",
+    "CompreFaceErrorMessage": "Unable to connect to CompreFace. Ensure the integration was correctly configured and that CompreFace is running in the background",
     "teachFaceErrorMessage": "Unable to learn face. Verify if the uploaded images have only a single face and make sure the face is visible"
   }
 }

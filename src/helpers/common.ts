@@ -4,7 +4,7 @@ import { getFaceList } from "../websocket";
 export async function getPersonEntities(hass) {
   const people: PersonInfo[] = [];
   const registeredFacesNames = await getRegisteredFacesNames(hass);
-  if (registeredFacesNames == "Deepstack Error") {
+  if (registeredFacesNames == "compreface error") {
     return undefined;
   }
   const states = hass.states;

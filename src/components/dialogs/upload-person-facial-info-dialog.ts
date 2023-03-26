@@ -4,7 +4,7 @@ import { mdiFaceRecognition, mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import "../../../frontend-release/src/components/ha-dialog";
-import "../../../frontend-release/src/components/ha-header-bar";
+import "../../../frontend-release/src/components/ha-circular-progress";
 import "../file-upload";
 import type { HassDialog } from "../../../frontend-release/src/dialogs/make-dialog-manager";
 import { fireEvent } from "../../../frontend-release/src/common/dom/fire_event";
@@ -35,6 +35,8 @@ export class HuiDialogAddAiFacialData
   @property() public uploadErrorMessage!: string | undefined;
 
   @state() private _params?: aiPersonDialogParams;
+
+  @state() private uploading?: boolean = false;
 
   public async showDialog(params: aiPersonDialogParams): Promise<void> {
     this._params = params;
@@ -93,18 +95,24 @@ export class HuiDialogAddAiFacialData
           accept="image/png, image/jpeg, image/gif"
           >
         </file-upload>
-          ${
-            this.url_list === undefined
-              ? html``
-              : html` <mwc-button class="button-confirm" @click=${this._confirm}
-                  ><ha-svg-icon
-                    .path=${mdiCheckboxMarkedCircle}
-                    class="confirm-icon"
-                    slot="icon"
-                  ></ha-svg-icon
-                  >${localize("common.confirm")}</mwc-button
-                >`
-          }
+        ${
+          this.url_list === undefined
+            ? html``
+            : html`
+                ${this.uploading
+                  ? html`<div class="upload-progress">
+                      <ha-circular-progress active></ha-circular-progress>
+                    </div>`
+                  : html`<mwc-button class="button-confirm" @click=${this._confirm}
+                      ><ha-svg-icon
+                        .path=${mdiCheckboxMarkedCircle}
+                        class="confirm-icon"
+                        slot="icon"
+                      ></ha-svg-icon
+                      >${localize("common.confirm")}</mwc-button
+                    >`}
+              `
+        }
         </div>
       </ha-dialog>
     `;
@@ -117,12 +125,15 @@ export class HuiDialogAddAiFacialData
 
   private async _confirm() {
     if (this.url_list != undefined) {
+      this.uploading = true;
       const result = await teachFaceInformation(this.hass, this.personInfo?.name, this.url_list);
       if (result === true) {
         fireEvent(this, "update-ai-dashboard");
+        this.uploading = false;
         this.closeDialog();
       } else {
         this.url_list = undefined;
+        this.uploading = false;
         this.uploadErrorMessage = localize("error.teachFaceErrorMessage");
       }
     }
@@ -183,6 +194,11 @@ export class HuiDialogAddAiFacialData
           box-shadow: 0px 0px 5px 0px rgba(1, 1, 1, 0);
           --mdc-theme-primary: white;
           margin-bottom: 40px;
+        }
+        .upload-progress {
+          float: right;
+          margin-right: 8px;
+          font-size: 8px;
         }
         .button-confirm {
           background-color: #4ba2ff;
